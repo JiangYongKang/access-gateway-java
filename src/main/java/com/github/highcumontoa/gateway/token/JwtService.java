@@ -9,6 +9,8 @@ import java.util.List;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import com.github.highcumontoa.gateway.config.GatewayProperties;
+import com.github.highcumontoa.gateway.session.SessionRegistry;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -23,11 +25,20 @@ public class JwtService {
     private final GatewayProperties properties;
     private final KeyManager keyManager;
     private final Clock clock;
+    private final SessionRegistry sessionRegistry;
 
+    /** 兼容构造：不挂会话注册表（等价于没有任何会话被吊销）。 */
     public JwtService(GatewayProperties properties, KeyManager keyManager, Clock clock) {
+        this(properties, keyManager, clock, new SessionRegistry(clock));
+    }
+
+    @Autowired
+    public JwtService(GatewayProperties properties, KeyManager keyManager, Clock clock,
+                      SessionRegistry sessionRegistry) {
         this.properties = properties;
         this.keyManager = keyManager;
         this.clock = clock;
+        this.sessionRegistry = sessionRegistry;
     }
 
     public String issue(String subject, List<String> roles, String sessionFamily) {
@@ -100,6 +111,11 @@ public class JwtService {
         }
         if (now.getEpochSecond() < iat - skew) {
             return TokenValidationResult.fail(TokenFailureReason.NOT_YET_VALID);
+        }
+        // 会话级失效：令牌本身合法，但所属会话已被下线。排在所有令牌内在检查之后，
+        // 保证拒绝原因可与令牌非法/过期/签发方受众不匹配等情况明确区分。
+        if (sessionRegistry.isRevoked(fam)) {
+            return TokenValidationResult.fail(TokenFailureReason.SESSION_REVOKED);
         }
         List<String> roles = extractStringArray(payloadJson, "roles");
         return TokenValidationResult.ok(new AccessTokenClaims(

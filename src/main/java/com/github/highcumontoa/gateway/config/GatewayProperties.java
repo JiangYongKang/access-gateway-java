@@ -14,6 +14,12 @@ public class GatewayProperties {
     private Duration clockSkewTolerance = Duration.ofSeconds(60);
     /** 密钥轮换后旧密钥继续用于验签的重叠期。 */
     private Duration keyOverlapPeriod = Duration.ofMinutes(30);
+    /** 会话族自建立起的总最长可续期时间（连续轮换也不能突破）。 */
+    private Duration sessionMaxLifetime = Duration.ofDays(7);
+    /** 会话闲置超时：超过该时长没有任何刷新活动即失效。 */
+    private Duration sessionIdleTimeout = Duration.ofHours(24);
+    /** 审计日志容量上限：达到上限后按最旧优先淘汰。 */
+    private int auditCapacity = 10_000;
 
     public String getIssuer() { return issuer; }
     public void setIssuer(String issuer) { this.issuer = issuer; }
@@ -27,4 +33,10 @@ public class GatewayProperties {
     public void setClockSkewTolerance(Duration clockSkewTolerance) { this.clockSkewTolerance = clockSkewTolerance; }
     public Duration getKeyOverlapPeriod() { return keyOverlapPeriod; }
     public void setKeyOverlapPeriod(Duration keyOverlapPeriod) { this.keyOverlapPeriod = keyOverlapPeriod; }
+    public Duration getSessionMaxLifetime() { return sessionMaxLifetime; }
+    public void setSessionMaxLifetime(Duration sessionMaxLifetime) { this.sessionMaxLifetime = sessionMaxLifetime; }
+    public Duration getSessionIdleTimeout() { return sessionIdleTimeout; }
+    public void setSessionIdleTimeout(Duration sessionIdleTimeout) { this.sessionIdleTimeout = sessionIdleTimeout; }
+    public int getAuditCapacity() { return auditCapacity; }
+    public void setAuditCapacity(int auditCapacity) { this.auditCapacity = auditCapacity; }
 }

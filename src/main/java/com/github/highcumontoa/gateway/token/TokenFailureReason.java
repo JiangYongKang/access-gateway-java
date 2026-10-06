@@ -9,5 +9,7 @@ public enum TokenFailureReason {
     ISSUER_MISMATCH,
     AUDIENCE_MISMATCH,
     EXPIRED,
-    NOT_YET_VALID
+    NOT_YET_VALID,
+    /** 令牌本身合法，但所属会话已被下线（单会话下线/全部下线/重用检测触发的吊销）。 */
+    SESSION_REVOKED
 }

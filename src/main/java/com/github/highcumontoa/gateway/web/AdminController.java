@@ -1,8 +1,10 @@
 package com.github.highcumontoa.gateway.web;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import com.github.highcumontoa.gateway.audit.AuditLog;
+import com.github.highcumontoa.gateway.audit.AuditQuery;
 import com.github.highcumontoa.gateway.policy.Policy;
 import com.github.highcumontoa.gateway.policy.PolicyEngine;
 import com.github.highcumontoa.gateway.token.KeyManager;
@@ -45,8 +47,17 @@ public class AdminController {
                 .toList());
     }
 
+    /** 审计查询：支持按主体、会话、结论、事件类型与时间范围筛选（参数均可空）。 */
     @GetMapping("/audit")
-    public Object audit() {
-        return auditLog.entries();
+    public Object audit(
+            @RequestParam(required = false) String subject,
+            @RequestParam(required = false) String sessionId,
+            @RequestParam(required = false) Boolean allowed,
+            @RequestParam(required = false) String eventType,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to) {
+        return auditLog.query(new AuditQuery(subject, sessionId, allowed, eventType,
+                from == null ? null : Instant.parse(from),
+                to == null ? null : Instant.parse(to)));
     }
 }

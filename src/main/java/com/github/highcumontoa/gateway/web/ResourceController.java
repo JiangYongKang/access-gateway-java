@@ -1,9 +1,8 @@
 package com.github.highcumontoa.gateway.web;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import com.github.highcumontoa.gateway.audit.AuditEntry;
+import com.github.highcumontoa.gateway.audit.AuditEventType;
 import com.github.highcumontoa.gateway.audit.AuditLog;
 import com.github.highcumontoa.gateway.policy.AccessDecision;
 import com.github.highcumontoa.gateway.policy.PolicyEngine;
@@ -58,8 +57,8 @@ public class ResourceController {
         }
         AccessTokenClaims claims = validation.claims();
         AccessDecision decision = policyEngine.evaluate(claims.roles(), resource, action);
-        auditLog.record(new AuditEntry(Instant.now(), claims.subject(), claims.roles(),
-                resource, action, decision.allowed(), decision.reason()));
+        auditLog.record(AuditEventType.ACCESS, claims.subject(), claims.sessionFamily(), claims.roles(),
+                resource, action, decision.allowed(), decision.reason());
         if (!decision.allowed()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", "ACCESS_DENIED", "reason", decision.reason()));

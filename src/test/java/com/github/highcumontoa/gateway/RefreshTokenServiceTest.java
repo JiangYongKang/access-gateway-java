@@ -9,7 +9,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import com.github.highcumontoa.gateway.auth.CredentialStore;
+import com.github.highcumontoa.gateway.audit.AuditLog;
 import com.github.highcumontoa.gateway.config.GatewayProperties;
+import com.github.highcumontoa.gateway.session.SessionRegistry;
 import com.github.highcumontoa.gateway.support.MutableClock;
 import com.github.highcumontoa.gateway.token.JwtService;
 import com.github.highcumontoa.gateway.token.KeyManager;
@@ -36,7 +38,8 @@ class RefreshTokenServiceTest {
         clock = new MutableClock(Instant.parse("2026-09-25T00:00:00Z"));
         KeyManager keyManager = new KeyManager(properties, clock);
         JwtService jwtService = new JwtService(properties, keyManager, clock);
-        refreshService = new RefreshTokenService(properties, jwtService, new CredentialStore(), clock);
+        refreshService = new RefreshTokenService(properties, jwtService, new CredentialStore(), clock,
+                new SessionRegistry(clock), new AuditLog());
     }
 
     @Test

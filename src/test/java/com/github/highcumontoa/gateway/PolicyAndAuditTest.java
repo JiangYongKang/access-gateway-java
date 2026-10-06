@@ -9,6 +9,7 @@ import com.github.highcumontoa.gateway.config.GatewayProperties;
 import com.github.highcumontoa.gateway.policy.AccessDecision;
 import com.github.highcumontoa.gateway.policy.Policy;
 import com.github.highcumontoa.gateway.policy.PolicyEngine;
+import com.github.highcumontoa.gateway.session.SessionRegistry;
 import com.github.highcumontoa.gateway.support.MutableClock;
 import com.github.highcumontoa.gateway.token.JwtService;
 import com.github.highcumontoa.gateway.token.KeyManager;
@@ -38,7 +39,9 @@ class PolicyAndAuditTest {
         KeyManager keyManager = new KeyManager(properties, clock);
         JwtService jwtService = new JwtService(properties, keyManager, clock);
         CredentialStore credentialStore = new CredentialStore();
-        refreshService = new RefreshTokenService(properties, jwtService, credentialStore, clock);
+        // 刷新服务使用独立审计日志，避免会话事件干扰资源访问审计的计数断言。
+        refreshService = new RefreshTokenService(properties, jwtService, credentialStore, clock,
+                new SessionRegistry(clock), new AuditLog());
         policyEngine = new PolicyEngine();
         auditLog = new AuditLog();
         controller = new ResourceController(jwtService, policyEngine, auditLog);
